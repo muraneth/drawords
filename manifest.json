@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "name": "Drawords",
+    "description": "This is a Chrome extension for learn English everywhere",
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "Drawords"
+    },
+    "permissions": [
+        "contextMenus",
+        "storage"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
+}
