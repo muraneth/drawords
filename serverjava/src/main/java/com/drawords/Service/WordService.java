@@ -6,9 +6,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.drawords.Service.translate.GPTClient;
 import com.drawords.bean.PageQuery;
+import com.drawords.bean.WordContext;
 import com.drawords.bean.WordView;
-import com.drawords.bean.WordDetail;
+import com.drawords.bean.gpt.GTPWordExlpain;
+import com.drawords.bean.user.UserContext;
+import com.drawords.utils.UserContextHolder;
+import com.drawords.bean.WordTranslation;
 import com.google.common.collect.Lists;
 
 import db3_database_v2_proto.Db3DatabaseV2.Document;
@@ -18,30 +23,37 @@ import java.util.logging.*;
 public class WordService {
     private static final Logger logger = Logger.getLogger(WordService.class.getName());
 
-    private WordDetail word = new WordDetail("decentralized", "n. 去中心化", "[diːˈsɛntrəˌlaɪzd]", "",
-            "https://cdn.ejoy.io/ej/def/50331.jpg",
-            Lists.newArrayList(
-                    " A network of interconnected nodes, each having its own decision-making power and contributing to the overall functioning of the system."),
-            Lists.newArrayList("recover", "reclaim"));
     private DB3Client db3Client = DB3Client.getInstance();
 
     public void saveWord(WordView saveWord) {
 
+        UserContext userContext = UserContextHolder.getContext();
+
+        WordTranslation word = new WordTranslation();
+
         db3Client.saveToDB3(word);
     }
 
-    public WordDetail queryWord(WordView wordView) {
+    public WordTranslation checkWord(WordView wordView) {
+        WordContext context = wordView.getContext();
+        GTPWordExlpain askGPTAsDictionary = GPTClient.askGPTAsDictionary(wordView.getWord(), context.getSentence(),
+                false, "CN");
 
-        return this.word;
+        WordTranslation translation = new WordTranslation();
+        translation.setWord(askGPTAsDictionary.getWord());
+        // translation.setTranslations(askGPTAsDictionary.getTranslations());
+        translation.setPhoneticUS(askGPTAsDictionary.getPhonetic());
+        translation.setSimilarWords(askGPTAsDictionary.getSimilarWords());
+        return translation;
     }
 
-    public List<WordDetail> queryWordList(PageQuery query) {
+    public List<WordTranslation> queryWordList(PageQuery query) {
 
         List<Document> queryDoc = db3Client.queryDoc(query.getQuery_key());
 
         return queryDoc.stream().map(item -> {
 
-            WordDetail w = JSON.parseObject(item.getDoc(), WordDetail.class);
+            WordTranslation w = JSON.parseObject(item.getDoc(), WordTranslation.class);
 
             return w;
         }).collect(Collectors.toList());

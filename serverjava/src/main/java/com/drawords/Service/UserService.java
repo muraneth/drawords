@@ -15,14 +15,4 @@ public class UserService {
         user.setSign("password");
         return user;
     }
-
-    // write a function with name getUserById and return a mock
-    // com.drawords.bean.user.User object , put some value into the user object
-    // public com.drawords.bean.user.User getUserById(int id) {
-    // com.drawords.bean.user.User user = new com.drawords.bean.user.User();
-    // user.setId(id);
-    // user.setUsername("username");
-    // user.setPassword("password");
-    // return user;
-
 }

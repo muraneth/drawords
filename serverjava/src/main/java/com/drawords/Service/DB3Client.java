@@ -8,7 +8,7 @@ import org.web3j.crypto.ECKeyPair;
 import org.web3j.utils.Numeric;
 
 import com.alibaba.fastjson.JSON;
-import com.drawords.bean.Word;
+import com.drawords.bean.WordTranslation;
 
 import db3_database_v2_proto.Db3DatabaseV2;
 
@@ -50,7 +50,7 @@ public class DB3Client {
         return db3Client;
     }
 
-    public AddDocResult saveToDB3(Word word) {
+    public AddDocResult saveToDB3(WordTranslation word) {
 
         System.out.println(word);
 

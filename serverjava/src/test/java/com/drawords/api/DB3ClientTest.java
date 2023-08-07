@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.drawords.Service.DB3Client;
-import com.drawords.bean.Word;
+import com.drawords.bean.WordTranslation;
 
 import network.db3.client.AddDocResult;
 import network.db3.client.Client;
@@ -31,7 +31,7 @@ public class DB3ClientTest {
     @Test
     public void testSaveToDB3Success() throws Exception {
         // Arrange
-        Word testWord = new Word(); // you might need to populate it if Word has mandatory fields
+        WordTranslation testWord = new WordTranslation(); // you might need to populate it if Word has mandatory fields
         AddDocResult expectedResult = new AddDocResult(null, 0); // you can mock this too if needed
 
         when(mockClient.addDoc(anyString(), anyString(), anyString())).thenReturn(expectedResult);
@@ -47,7 +47,7 @@ public class DB3ClientTest {
     @Test
     public void testSaveToDB3Exception() throws Exception {
         // Arrange
-        Word testWord = new Word();
+        WordTranslation testWord = new WordTranslation();
 
         // when(mockClient.addDoc(anyString(), anyString(), anyString())).thenThrow(new
         // Exception("DB Error"));

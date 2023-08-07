@@ -11,7 +11,7 @@ import com.drawords.Service.WordService;
 import com.drawords.bean.MuxResponse;
 import com.drawords.bean.PageQuery;
 import com.drawords.bean.WordView;
-import com.drawords.bean.WordDetail;
+import com.drawords.bean.WordTranslation;
 import com.drawords.bean.user.User;
 import com.drawords.exception.UnauthorizedException;
 
@@ -24,27 +24,29 @@ public class WordController extends BaseController {
     private WordService wordService;
 
     @PostMapping("/saveWord")
-    public MuxResponse SaveWord(HttpServletRequest request, @RequestBody(required = true) WordView wordView) {
+    public MuxResponse<String> SaveWord(HttpServletRequest request, @RequestBody(required = true) WordView wordView) {
 
-        try {
-            super.authorizeRequest(request);
-        } catch (UnauthorizedException e) {
-            return MuxResponse.buildErrorResponse(e.getMessage());
-        }
+        // try {
+        // super.authorizeRequest(request);
+        // } catch (UnauthorizedException e) {
+        // return MuxResponse.buildErrorResponse(e.getMessage());
+        // }
 
         wordService.saveWord(wordView);
         return MuxResponse.buildSuccessResponse(null);
     }
 
     @PostMapping("/checkWord")
-    public MuxResponse<WordDetail> checkWord(HttpServletRequest request, @RequestBody WordView wordView) {
-        try {
-            super.authorizeRequest(request);
-        } catch (UnauthorizedException e) {
-            return MuxResponse.buildErrorResponse(e.getMessage());
-        }
+    public MuxResponse<WordTranslation> checkWord(HttpServletRequest request, @RequestBody WordView wordView) {
+        // try {
+        // super.authorizeRequest(request);
+        // } catch (UnauthorizedException e) {
+        // return MuxResponse.buildErrorResponse(e.getMessage());
+        // }
 
-        return wordService.queryWord(wordView);
+        WordTranslation queryWord = wordService.checkWord(wordView);
+
+        return MuxResponse.buildSuccessResponse(queryWord);
     }
 
 }
