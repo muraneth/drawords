@@ -34,7 +34,7 @@ public class GPTClient implements Callable {
         return "";
     }
 
-    public String askGPTAsDictionary(String word) {
+    public String askGPTAsDictionary(String word, String context) {
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -43,15 +43,22 @@ public class GPTClient implements Callable {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.set("Authorization", "Bearer " + apiToken);
+        String systemMessage = "";
+        if (context != null && context.length() > 0) {
+            systemMessage = String.format(
+                    "translate the word %s based on the context %s, additionally,draw a picture that describe the word . Please reply in the json as the format: {word:xx, phonetic: [xx], translation:n.xx; adj:xx, pic_prompt:xx,similer_words:[xx] }",
+                    word, context);
+        } else {
+            systemMessage = String.format(
+                    "translate the word %s, additionally,draw a picture that describe the word . Please reply in the json as the format: {word:xx, phonetic: [xx], translation: n/adj/v.xx , pic_prompt:xx,similer_words:[a,b,c]}",
+                    word);
+        }
 
-        String systemMessage = String.format(
-                "You are excellent English teacher, every time I ask you about a new word or phrase, you can alway give me  1.one example sentence and 2.generate a picture prompt to describe the word and 3.a brief explain about the word and 4.some similar words. Here is the word: %s. Please return your answer in json with 4 keys [sentence , pic_prompt, explanation ,similar_words]",
-                word);
         // Prepare the body of the request.
         Map<String, Object> body = Map.of(
                 "model", "gpt-3.5-turbo",
                 "messages", new Object[] {
-                        Map.of("role", "system", "content", systemMessage)
+                        Map.of("role", "dictionary", "content", systemMessage)
                 });
 
         // Build the request.

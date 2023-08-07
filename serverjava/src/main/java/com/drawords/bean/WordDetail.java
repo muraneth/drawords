@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Word {
+public class WordDetail {
 
     private String word;
     private String explaination;

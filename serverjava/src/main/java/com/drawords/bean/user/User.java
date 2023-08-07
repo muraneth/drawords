@@ -1,4 +1,4 @@
-package com.drawords.bean;
+package com.drawords.bean.user;
 
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -12,7 +12,8 @@ public class User implements Serializable {
 
     private Long id;
     private String name;
-    private String crypto_address;
-    private String signature;
-    private String email_addres;
+    private String cryptoAddress;
+    private String sign;
+    private String hashPassword;
+    private String emailAddres;
 }
