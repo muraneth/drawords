@@ -1,3 +1,5 @@
+console.log("injected");
+
 document.addEventListener("mouseup", handleMouseUp);
 document.addEventListener("selectionchange", handleSelectionChange);
 
@@ -15,11 +17,16 @@ function handleMouseUp(event) {
 function handleSelectionChange() {
   if (!window.getSelection().toString().trim()) {
     removeTrans();
+    removeTranscard();
   }
 }
 
 function removeTrans() {
   const existingDiv = document.getElementById("mux-trans");
+  if (existingDiv) existingDiv.remove();
+}
+function removeTranscard() {
+  const existingDiv = document.getElementById("mux-trans-card");
   if (existingDiv) existingDiv.remove();
 }
 
@@ -46,6 +53,7 @@ function createIconCard(x, y, word) {
   document.body.appendChild(div);
 
   iconDiv.addEventListener("click", function () {
+    console.log("click");
     translateWord(word, (translation) => {
       removeTrans();
       createTranslationCard(x, y, word, translation);

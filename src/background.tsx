@@ -1,7 +1,11 @@
-type SaveWord = {
-  word: string;
-  sign: string;
-};
+chrome.scripting.registerContentScripts([
+  {
+    id: `main_context_inject_${Math.random()}`,
+    world: "ISOLATED",
+    matches: ["https://*/*"],
+    js: ["inject.js"],
+  },
+]);
 
 chrome.contextMenus.onClicked.addListener(async (info) => {
   var word = info.selectionText;
@@ -24,6 +28,10 @@ chrome.runtime.onInstalled.addListener(async function () {
   });
 });
 
+type SaveWord = {
+  word: string;
+  sign: string;
+};
 async function save(props: SaveWord) {
   const requestOptions = {
     method: "POST",

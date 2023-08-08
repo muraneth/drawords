@@ -18,6 +18,9 @@
         "activeTab",
         "scripting"
     ],
+    "host_permissions": [
+        "https://*/*"
+    ],
     "background": {
         "service_worker": "background.js"
     },
@@ -27,21 +30,8 @@
                 "*.png"
             ],
             "matches": [
-                "https://*/*",
-                "file://*/*"
+                "https://*/*"
             ]
-        }
-    ],
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*/*",
-                "file://*/*"
-            ],
-            "js": [
-                "content_script.js"
-            ],
-            "run_at": "document_end"
         }
     ]
 }
