@@ -32,5 +32,25 @@ async function save(props: SaveWord) {
     },
     body: JSON.stringify(props),
   };
-  const responce = await fetch("http://localhost:3000/save", requestOptions);
+  const responce = await fetch("http://localhost:8080/save", requestOptions);
 }
+
+chrome.runtime.onInstalled.addListener(function () {
+  // chrome.action.onClicked.addListener(function (tab) {
+  //   chrome.action.setPopup({ tabId: tab.id, popup: "popup.html" });
+  // });
+
+  chrome.runtime.onMessage.addListener(function (
+    message,
+    sender,
+    sendResponse
+  ) {
+    console.log("message =>", message);
+
+    if (message.word) {
+      translateWord(message.word, function (translatedText) {
+        chrome.storage.local.set({ translatedWord: translatedText });
+      });
+    }
+  });
+});

@@ -6,6 +6,8 @@ module.exports = {
   entry: {
     index: "./src/index.tsx",
     background: "./src/background.tsx",
+    content_script: "./src/content_script.js",
+    popup: "./src/popup.js",
   },
   mode: "production",
   module: {
@@ -36,10 +38,18 @@ module.exports = {
   },
   plugins: [
     new CopyPlugin({
-      patterns: [{ from: "manifest.json", to: "./manifest.json" }],
+      patterns: [
+        { from: "manifest.json", to: "./manifest.json" },
+        { from: "./src/assets/*.png", to: "./[name][ext]" },
+      ],
     }),
 
     ...getHtmlPlugins(["index"]),
+    new HTMLPlugin({
+      template: "./src/popup.html",
+      filename: "popup.html",
+      chunks: ["popup"],
+    }),
   ],
   resolve: {
     extensions: [".tsx", ".ts", ".js"],

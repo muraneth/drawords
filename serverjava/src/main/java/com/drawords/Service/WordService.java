@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.drawords.Service.translate.GPTClient;
+import com.drawords.Service.translate.GoogleTranslate;
 import com.drawords.bean.PageQuery;
 import com.drawords.bean.WordContext;
+import com.drawords.bean.WordQuery;
 import com.drawords.bean.WordView;
 import com.drawords.bean.gpt.GTPWordExlpain;
 import com.drawords.bean.user.UserContext;
@@ -25,7 +27,7 @@ public class WordService {
 
     private DB3Client db3Client = DB3Client.getInstance();
 
-    public void saveWord(WordView saveWord) {
+    public void saveWord(WordQuery wQuery) {
 
         UserContext userContext = UserContextHolder.getContext();
 
@@ -34,9 +36,9 @@ public class WordService {
         db3Client.saveToDB3(word);
     }
 
-    public WordTranslation checkWord(WordView wordView) {
-        WordContext context = wordView.getContext();
-        GTPWordExlpain askGPTAsDictionary = GPTClient.askGPTAsDictionary(wordView.getWord(), context.getSentence(),
+    public WordTranslation checkWord(WordQuery wQuery) {
+        WordContext context = wQuery.getContext();
+        GTPWordExlpain askGPTAsDictionary = GPTClient.askGPTAsDictionary(wQuery.getWord(), context.getSentence(),
                 false, "CN");
 
         WordTranslation translation = new WordTranslation();
@@ -58,5 +60,14 @@ public class WordService {
             return w;
         }).collect(Collectors.toList());
 
+    }
+
+    public WordTranslation translateWord(WordQuery wQuery) {
+
+        String translateSentence = GoogleTranslate.translateSentence(wQuery.getWord(), null, null);
+        WordTranslation translation = new WordTranslation();
+        translation.setTranslation(translateSentence);
+        translation.setWord(wQuery.getWord());
+        return translation;
     }
 }

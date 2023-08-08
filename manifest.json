@@ -1,17 +1,47 @@
 {
     "version": "1.0.0",
     "manifest_version": 3,
-    "name": "Drawords",
+    "name": "Mux AI Distionary",
     "description": "This is a Chrome extension for learn English everywhere",
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "96": "icon96.png"
+    },
     "action": {
         "default_popup": "index.html",
-        "default_title": "Drawords"
+        "default_title": "Mux AI Distionary"
     },
     "permissions": [
         "contextMenus",
-        "storage"
+        "storage",
+        "activeTab",
+        "scripting"
     ],
     "background": {
         "service_worker": "background.js"
-    }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "*.png"
+            ],
+            "matches": [
+                "https://*/*",
+                "file://*/*"
+            ]
+        }
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*/*",
+                "file://*/*"
+            ],
+            "js": [
+                "content_script.js"
+            ],
+            "run_at": "document_end"
+        }
+    ]
 }
