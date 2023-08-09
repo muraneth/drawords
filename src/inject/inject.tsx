@@ -1,98 +1,231 @@
-console.log("injected");
+import * as utils from "../utils";
+import React from "react";
+import {
+  UserEventType,
+  getClientX,
+  getClientY,
+  getPageX,
+  getPageY,
+} from "../utils/user_events";
+import { createRoot, Root } from "react-dom/client";
+import {
+  getContainer,
+  popupCardID,
+  popupThumbID,
+  queryInjectCardElement,
+  queryInjectThumbElement,
+} from "./utils";
+import { WordSelected } from "../utils/types";
+import { Translator } from "../component/translator";
 
-document.addEventListener("mouseup", handleMouseUp);
-document.addEventListener("selectionchange", handleSelectionChange);
+const popupCardOffset = 7;
+let root: Root | null = null;
 
-function handleMouseUp(event) {
-  const selectedText = window.getSelection().toString().trim();
+async function popupThumbClickHandler(event: UserEventType) {
+  event.stopPropagation();
+  event.preventDefault();
+  const $popupThumb: HTMLDivElement | null = await queryInjectThumbElement();
+  if (!$popupThumb) {
+    return;
+  }
+  showPopupCard(
+    {
+      word: $popupThumb.dataset["word"] || "",
+      contextSentence: $popupThumb.dataset["contextSentence"] || "",
+    } as WordSelected,
+    getPageX(event) + popupCardOffset,
+    getPageY(event) + popupCardOffset
+  );
+}
 
-  if (selectedText) {
-    removeTrans();
-    createIconCard(event.pageX, event.pageY, selectedText);
+async function showPopupThumb(
+  wordSelected: WordSelected,
+  x: number,
+  y: number
+) {
+  if (!wordSelected || !wordSelected.word) {
+    return;
+  }
+
+  let $popupThumb: HTMLDivElement | null = await queryInjectThumbElement();
+  if (!$popupThumb) {
+    $popupThumb = document.createElement("div");
+    $popupThumb.id = popupThumbID;
+    $popupThumb.style.position = "absolute";
+    $popupThumb.style.padding = "2px";
+    $popupThumb.style.borderRadius = "4px";
+    $popupThumb.style.boxShadow = "0 0 4px rgba(0,0,0,.2)";
+    $popupThumb.style.cursor = "pointer";
+    $popupThumb.style.userSelect = "none";
+    $popupThumb.style.width = "20px";
+    $popupThumb.style.height = "20px";
+    $popupThumb.style.overflow = "hidden";
+    $popupThumb.addEventListener("click", popupThumbClickHandler);
+    $popupThumb.addEventListener("touchend", popupThumbClickHandler);
+    $popupThumb.addEventListener("mousemove", (event) => {
+      event.stopPropagation();
+    });
+    $popupThumb.addEventListener("touchmove", (event) => {
+      event.stopPropagation();
+    });
+    const $img = document.createElement("img");
+    $img.src = chrome.runtime.getURL("icon48.png");
+    $img.style.display = "block";
+    $img.style.width = "100%";
+    $img.style.height = "100%";
+    $popupThumb.appendChild($img);
+    const $container = await getContainer();
+    $container.shadowRoot?.querySelector("div")?.appendChild($popupThumb);
+  }
+  $popupThumb.dataset["word"] = wordSelected.word;
+  $popupThumb.dataset["contextSentence"] = wordSelected.contextSentence;
+  $popupThumb.style.visibility = "visible";
+  $popupThumb.style.opacity = "100";
+  $popupThumb.style.left = `${x}px`;
+  $popupThumb.style.top = `${y}px`;
+}
+
+async function hidePopupCard() {
+  const $popupCard: HTMLDivElement | null = await queryInjectCardElement();
+  if (!$popupCard) {
+    return;
+  }
+  speechSynthesis.cancel();
+  if (root) {
+    root.unmount();
+    root = null;
+  }
+  removeContainer();
+}
+async function removeContainer() {
+  const $container = await getContainer();
+  $container.remove();
+}
+
+async function hidePopupThumb() {
+  const $popupThumb: HTMLDivElement | null = await queryInjectThumbElement();
+  if (!$popupThumb) {
+    return;
+  }
+  $popupThumb.style.visibility = "hidden";
+}
+async function createPopupCard() {
+  const $popupCard = document.createElement("div");
+  $popupCard.id = popupCardID;
+  const $container = await getContainer();
+  $container.shadowRoot?.querySelector("div")?.appendChild($popupCard);
+
+  return $popupCard;
+}
+async function showPopupCard(wordSelected: WordSelected, x: number, y: number) {
+  const $popupThumb: HTMLDivElement | null = await queryInjectThumbElement();
+  if ($popupThumb) {
+    $popupThumb.style.visibility = "hidden";
+  }
+  console.log("showPopupCard", wordSelected);
+
+  const $popupCard =
+    (await queryInjectCardElement()) ?? (await createPopupCard());
+  $popupCard.style.position = "absolute";
+  $popupCard.style.padding = "2px";
+  $popupCard.style.visibility = "visible";
+  $popupCard.style.opacity = "100";
+  $popupCard.style.left = `${x}px`;
+  $popupCard.style.top = `${y}px`;
+
+  const settings = await utils.getSettings();
+
+  root = createRoot($popupCard);
+
+  root.render(
+    <React.StrictMode>
+      <Translator {...wordSelected} />
+    </React.StrictMode>
+  );
+}
+
+function getRelatedSentence(selection: Selection) {
+  if (selection && selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    // Do something with the range
+    const container = range.commonAncestorContainer; // Get the common ancestor container of the selection
+
+    // Determine the node containing the sentence (either a parent element or the text node's parent element)
+    const sentenceNode =
+      container.nodeType === Node.TEXT_NODE
+        ? container.parentElement
+        : container;
+
+    return sentenceNode.textContent;
   } else {
-    removeTrans();
+    console.log("No selection or range found.");
   }
 }
+async function main() {
+  console.log("===============>injected");
+  const browser = chrome;
+  let mousedownTarget: EventTarget | null;
+  let lastMouseEvent: UserEventType | undefined;
 
-function handleSelectionChange() {
-  if (!window.getSelection().toString().trim()) {
-    removeTrans();
-    removeTranscard();
-  }
-}
+  const mouseUpHandler = async (event: UserEventType) => {
+    lastMouseEvent = event;
+    const settings = await utils.getSettings();
+    if (
+      (mousedownTarget instanceof HTMLInputElement ||
+        mousedownTarget instanceof HTMLTextAreaElement) &&
+      settings.selectInputElementsText === false
+    ) {
+      return;
+    }
+    window.setTimeout(async () => {
+      const sel = window.getSelection();
+      let text = (sel?.toString() ?? "").trim();
 
-function removeTrans() {
-  const existingDiv = document.getElementById("mux-trans");
-  if (existingDiv) existingDiv.remove();
-}
-function removeTranscard() {
-  const existingDiv = document.getElementById("mux-trans-card");
-  if (existingDiv) existingDiv.remove();
-}
+      if (text) {
+        let contextSentence = getRelatedSentence(sel);
 
-function createIconCard(x, y, word) {
-  const div = document.createElement("div");
-  div.id = "mux-trans";
-  Object.assign(div.style, {
-    position: "absolute",
-    left: `${x}px`,
-    top: `${y}px`,
-  });
-
-  const iconDiv = document.createElement("div");
-  Object.assign(iconDiv.style, {
-    backgroundSize: "24px",
-    height: "24px",
-    width: "24px",
-    zIndex: "9999",
-    cursor: "pointer",
-    backgroundImage: `url(${chrome.runtime.getURL("icon48.png")})`,
-  });
-
-  div.appendChild(iconDiv);
-  document.body.appendChild(div);
-
-  iconDiv.addEventListener("click", function () {
-    console.log("click");
-    translateWord(word, (translation) => {
-      removeTrans();
-      createTranslationCard(x, y, word, translation);
-    });
-  });
-}
-
-function createTranslationCard(x, y, word, translation) {
-  const div = document.createElement("div");
-  div.id = "mux-trans-card";
-  Object.assign(div.style, {
-    position: "absolute",
-    left: `${x}px`,
-    top: `${y}px`,
-    border: "1px solid #ccc",
-    padding: "10px",
-    backgroundColor: "white",
-    zIndex: "9999",
-  });
-  div.innerText = `Original: ${word}\nTranslation: ${translation}`;
-  document.body.appendChild(div);
-}
-
-function translateWord(word, callback) {
-  const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&hl=en-US&dt=t&dt=bd&dj=1&source=icon&tk=275688.275688&q=${word}`;
-
-  fetch(apiUrl, {
-    method: "GET",
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.text && data.text.length) {
-        callback(data.text[0]);
-      } else {
-        callback("Translation not available");
+        if (settings.autoTranslate === true) {
+          const x = getClientX(event);
+          const y = getClientY(event);
+          showPopupCard(
+            { word: text, contextSentence: contextSentence } as WordSelected,
+            getPageX(event) + popupCardOffset,
+            getPageY(event) + popupCardOffset
+          );
+        } else if (settings.alwaysShowIcons === true) {
+          showPopupThumb(
+            { word: text, contextSentence: contextSentence } as WordSelected,
+            getPageX(event) + popupCardOffset,
+            getPageY(event) + popupCardOffset
+          );
+        }
       }
-    })
-    .catch((error) => {
-      console.error("Translation error:", error);
-      callback("Translation error");
     });
+  };
+
+  document.addEventListener("mouseup", mouseUpHandler);
+  document.addEventListener("touchend", mouseUpHandler);
+
+  // browser.runtime.onMessage.addListener(function (request) {
+  //   if (request.type === "open-translator") {
+  //     if (window !== window.top) return;
+  //     const text = request.info.selectionText ?? "";
+  //     const x = lastMouseEvent ? getClientX(lastMouseEvent) : 0;
+  //     const y = lastMouseEvent ? getClientY(lastMouseEvent) : 0;
+  //     showPopupCard(text, x + popupCardOffset, y + popupCardOffset);
+  //   }
+  // });
+
+  const mouseDownHandler = async (event: UserEventType) => {
+    mousedownTarget = event.target;
+    const settings = await utils.getSettings();
+    hidePopupThumb();
+    if (!settings.pinned) {
+      hidePopupCard();
+    }
+  };
+  document.addEventListener("mousedown", mouseDownHandler);
+  document.addEventListener("touchstart", mouseDownHandler);
 }
+
+main();

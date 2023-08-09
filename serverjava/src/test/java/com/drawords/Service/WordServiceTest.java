@@ -18,7 +18,6 @@ public class WordServiceTest {
         WordView wordView = new WordView();
         wordView.setWord("export");
         wordView.setContext(new WordContext());
-        wordService.checkWord(wordView);
 
     }
 

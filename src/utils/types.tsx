@@ -11,6 +11,11 @@ export type BaseThemeType = "light" | "dark";
 export type ThemeType = BaseThemeType | "followTheSystem";
 export type TTSProvider = "WebSpeech" | "EdgeTTS";
 
+export interface WordSelected {
+  word: string;
+  contextSentence: string;
+}
+
 export interface ISettings {
   apiKeys: string;
   apiURL: string;

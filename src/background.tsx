@@ -56,9 +56,9 @@ chrome.runtime.onInstalled.addListener(function () {
     console.log("message =>", message);
 
     if (message.word) {
-      translateWord(message.word, function (translatedText) {
-        chrome.storage.local.set({ translatedWord: translatedText });
-      });
+      // translateWord(message.word, function (translatedText) {
+      //   chrome.storage.local.set({ translatedWord: translatedText });
+      // });
     }
   });
 });
