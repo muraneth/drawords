@@ -2,6 +2,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Suspense, useEffect, useState } from "react";
 import { WordSelected } from "../utils/types";
 import { GoogleResponse, translateWord } from "./google_trans";
+import TranslatorCardBasic from "./base_card";
 
 function ErrorFallback({
   error,
@@ -60,10 +61,12 @@ function InnerTranslator(props: WordSelected) {
 
   return (
     <div>
-      <div>
-        {props.word}
-        traslation :{tran ? tran.sentences[0].trans : ""}
-      </div>
+      {tran && (
+        <TranslatorCardBasic
+          word={props.word}
+          translation={tran?.sentences[0]?.trans}
+        />
+      )}
     </div>
   );
 }

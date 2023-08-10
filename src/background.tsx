@@ -2,7 +2,7 @@ chrome.scripting.registerContentScripts([
   {
     id: `main_context_inject_${Math.random()}`,
     world: "ISOLATED",
-    matches: ["https://*/*"],
+    matches: ["<all_urls>"],
     js: ["inject.js"],
   },
 ]);

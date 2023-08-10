@@ -18,6 +18,8 @@ import {
 import { WordSelected } from "../utils/types";
 import { Translator } from "../component/translator";
 
+import { StyleSheetManager } from "styled-components";
+
 const popupCardOffset = 7;
 let root: Root | null = null;
 
@@ -57,9 +59,11 @@ async function showPopupThumb(
     $popupThumb.style.boxShadow = "0 0 4px rgba(0,0,0,.2)";
     $popupThumb.style.cursor = "pointer";
     $popupThumb.style.userSelect = "none";
-    $popupThumb.style.width = "20px";
-    $popupThumb.style.height = "20px";
+    $popupThumb.style.width = "25px";
+    $popupThumb.style.height = "25px";
     $popupThumb.style.overflow = "hidden";
+    $popupThumb.style.backgroundColor = "white";
+
     $popupThumb.addEventListener("click", popupThumbClickHandler);
     $popupThumb.addEventListener("touchend", popupThumbClickHandler);
     $popupThumb.addEventListener("mousemove", (event) => {
@@ -83,6 +87,7 @@ async function showPopupThumb(
   $popupThumb.style.opacity = "100";
   $popupThumb.style.left = `${x}px`;
   $popupThumb.style.top = `${y}px`;
+  $popupThumb.style.zIndex = "99999";
 }
 
 async function hidePopupCard() {
@@ -109,6 +114,7 @@ async function hidePopupThumb() {
   }
   $popupThumb.style.visibility = "hidden";
 }
+
 async function createPopupCard() {
   const $popupCard = document.createElement("div");
   $popupCard.id = popupCardID;
@@ -132,14 +138,22 @@ async function showPopupCard(wordSelected: WordSelected, x: number, y: number) {
   $popupCard.style.opacity = "100";
   $popupCard.style.left = `${x}px`;
   $popupCard.style.top = `${y}px`;
+  $popupCard.style.zIndex = "99999";
 
   const settings = await utils.getSettings();
 
   root = createRoot($popupCard);
+  // injest style to Shadow root
+  const jss = create().setup({
+    ...preset(),
+    insertionPoint: $popupCard.parentElement ?? undefined,
+  });
 
   root.render(
     <React.StrictMode>
-      <Translator {...wordSelected} />
+      <StyleSheetManager target={$popupCard.parentElement}>
+        <Translator {...wordSelected} />
+      </StyleSheetManager>
     </React.StrictMode>
   );
 }
@@ -163,7 +177,7 @@ function getRelatedSentence(selection: Selection) {
 }
 async function main() {
   console.log("===============>injected");
-  const browser = chrome;
+  // const browser = chrome;
   let mousedownTarget: EventTarget | null;
   let lastMouseEvent: UserEventType | undefined;
 
@@ -217,12 +231,12 @@ async function main() {
   // });
 
   const mouseDownHandler = async (event: UserEventType) => {
-    mousedownTarget = event.target;
-    const settings = await utils.getSettings();
+    // mousedownTarget = event.target;
+    // const settings = await utils.getSettings();
     hidePopupThumb();
-    if (!settings.pinned) {
-      hidePopupCard();
-    }
+    // if (!settings.pinned) {
+    hidePopupCard();
+    // }
   };
   document.addEventListener("mousedown", mouseDownHandler);
   document.addEventListener("touchstart", mouseDownHandler);

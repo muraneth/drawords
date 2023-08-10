@@ -22,7 +22,9 @@ public class GoogleTranslate {
     public static String translateSentence(String sourceText, String sourceLanguage, String targetLanguage) {
         sourceLanguage = StringUtils.isBlank(sourceLanguage) ? "en" : sourceLanguage;
         targetLanguage = StringUtils.isBlank(targetLanguage) ? "zh" : targetLanguage;
-
+        if (sourceText == null) {
+            return "Source text is null.";
+        }
         try {
             Translation translation = translate.translate(sourceText,
                     Translate.TranslateOption.sourceLanguage(sourceLanguage),
