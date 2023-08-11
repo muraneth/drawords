@@ -143,11 +143,6 @@ async function showPopupCard(wordSelected: WordSelected, x: number, y: number) {
   const settings = await utils.getSettings();
 
   root = createRoot($popupCard);
-  // injest style to Shadow root
-  const jss = create().setup({
-    ...preset(),
-    insertionPoint: $popupCard.parentElement ?? undefined,
-  });
 
   root.render(
     <React.StrictMode>

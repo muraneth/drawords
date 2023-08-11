@@ -38,6 +38,21 @@ function ErrorFallback({
   );
 }
 
+const handleEditSpeakAction = async () => {
+  if (isSpeakingEditableText) {
+    editableStopSpeakRef.current();
+    setIsSpeakingEditableText(false);
+    return;
+  }
+  setIsSpeakingEditableText(true);
+  const { stopSpeak } = await speak({
+    text: editableText,
+    lang: sourceLang,
+    onFinish: () => setIsSpeakingEditableText(false),
+  });
+  editableStopSpeakRef.current = stopSpeak;
+};
+
 export function Translator(props: WordSelected) {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -62,10 +77,20 @@ function InnerTranslator(props: WordSelected) {
   return (
     <div>
       {tran && (
-        <TranslatorCardBasic
-          word={props.word}
-          translation={tran?.sentences[0]?.trans}
-        />
+        <>
+          <TranslatorCardBasic
+            word={props.word}
+            translation={tran?.sentences[0]?.trans}
+          />
+
+          <div className={styles.actionButton} onClick={handleEditSpeakAction}>
+            {isSpeakingEditableText ? (
+              <SpeakerMotion />
+            ) : (
+              <RxSpeakerLoud size={15} />
+            )}
+          </div>
+        </>
       )}
     </div>
   );
