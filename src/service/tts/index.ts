@@ -1,5 +1,5 @@
 import { SpeakOptions } from './types'
-import { getSettings } from '../utils'
+import { getSettings } from '../../utils'
 import { speak as edgeSpeak } from './edge_tts'
 
 export const langCode2TTSLang: Record<string, string> = {

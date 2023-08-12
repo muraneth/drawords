@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense, useEffect, useState } from "react";
-import { WordSelected } from "../utils/types";
+import { WordSelected } from "../../utils/types";
 import { GoogleResponse, translateWord } from "./google_trans";
 import TranslatorCardBasic from "./base_card";
 
@@ -38,21 +38,6 @@ function ErrorFallback({
   );
 }
 
-const handleEditSpeakAction = async () => {
-  if (isSpeakingEditableText) {
-    editableStopSpeakRef.current();
-    setIsSpeakingEditableText(false);
-    return;
-  }
-  setIsSpeakingEditableText(true);
-  const { stopSpeak } = await speak({
-    text: editableText,
-    lang: sourceLang,
-    onFinish: () => setIsSpeakingEditableText(false),
-  });
-  editableStopSpeakRef.current = stopSpeak;
-};
-
 export function Translator(props: WordSelected) {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -70,9 +55,7 @@ function InnerTranslator(props: WordSelected) {
 
   const [tran, setTran] = useState<GoogleResponse | undefined>();
 
-  useEffect(() => translateWord(props.word, setTran), [props.word]);
-
-  console.log(tran);
+  useEffect(() => translateWord(props.word, setTran), []);
 
   return (
     <div>
@@ -80,16 +63,9 @@ function InnerTranslator(props: WordSelected) {
         <>
           <TranslatorCardBasic
             word={props.word}
-            translation={tran?.sentences[0]?.trans}
+            context={props.contextSentence}
+            google_trans={tran.sentences[0].trans}
           />
-
-          <div className={styles.actionButton} onClick={handleEditSpeakAction}>
-            {isSpeakingEditableText ? (
-              <SpeakerMotion />
-            ) : (
-              <RxSpeakerLoud size={15} />
-            )}
-          </div>
         </>
       )}
     </div>

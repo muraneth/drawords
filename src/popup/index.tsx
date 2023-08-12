@@ -1,9 +1,10 @@
-import "./App.css";
+import ReactDOM from "react-dom/client";
+
 import React, { useEffect, useState } from "react";
 
-import { LocalStorage, WordRecord } from "./storage/local_storage";
-import { useAsyncFn } from "react-use";
-import { speak } from "./tts";
+import { LocalStorage, WordRecord } from "../service/storage/local_storage";
+
+import { speak } from "../service/tts";
 
 function App() {
   const [record, setRecord] = useState("");
@@ -71,4 +72,13 @@ function App() {
   );
 }
 
-export default App;
+const root = document.createElement("div");
+root.className = "container";
+document.body.appendChild(root);
+const rootDiv = ReactDOM.createRoot(root);
+
+rootDiv.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

@@ -16,7 +16,7 @@ import {
   queryInjectThumbElement,
 } from "./utils";
 import { WordSelected } from "../utils/types";
-import { Translator } from "../component/translator";
+import { Translator } from "../assets/component/translator";
 
 import { StyleSheetManager } from "styled-components";
 

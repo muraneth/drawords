@@ -4,10 +4,10 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: {
-    index: "./src/index.tsx",
+    popup: "./src/popup/index.tsx",
     background: "./src/background.tsx",
     inject: "./src/inject/inject.tsx",
-    popup: "./src/popup.js",
+    newtab: "./src/newtab/newtab.tsx",
   },
   mode: "production",
   module: {
@@ -40,15 +40,16 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "manifest.json", to: "./manifest.json" },
-        { from: "./src/assets/*.png", to: "./[name][ext]" },
+        { from: "./src/assets/static/*.png", to: "./[name][ext]" },
       ],
     }),
 
     ...getHtmlPlugins(["index"]),
+
     new HTMLPlugin({
-      template: "./src/popup.html",
-      filename: "popup.html",
-      chunks: ["popup"],
+      template: "./src/newtab/newtab.html",
+      filename: "newtab.html",
+      chunks: ["newtab"],
     }),
   ],
   resolve: {

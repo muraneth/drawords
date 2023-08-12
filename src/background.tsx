@@ -4,6 +4,7 @@ chrome.scripting.registerContentScripts([
     world: "ISOLATED",
     matches: ["<all_urls>"],
     js: ["inject.js"],
+    runAt: "document_end",
   },
 ]);
 
@@ -43,22 +44,35 @@ async function save(props: SaveWord) {
   const responce = await fetch("http://localhost:8080/save", requestOptions);
 }
 
+import { askGPT } from "./service/ai/chat_gpt_client";
+// import { LocalStorage, WordRecord } from "./storage/local_storage";
+import useLocalStorage from "./service/storage/storage_local";
+
 chrome.runtime.onInstalled.addListener(function () {
-  // chrome.action.onClicked.addListener(function (tab) {
-  //   chrome.action.setPopup({ tabId: tab.id, popup: "popup.html" });
-  // });
+  const { addWord } = useLocalStorage();
 
   chrome.runtime.onMessage.addListener(function (
     message,
     sender,
     sendResponse
   ) {
-    console.log("message =>", message);
+    console.log("message =>", message, sender);
 
-    if (message.word) {
-      // translateWord(message.word, function (translatedText) {
-      //   chrome.storage.local.set({ translatedWord: translatedText });
-      // });
+    if (message.msgType == "save-word") {
+      setTimeout(() => {
+        addWord(message.word);
+        sendResponse({ farewell: "saved" });
+      }, 100);
+
+      return true;
+    }
+    if (message.msgType == "ai-analyze") {
+      setTimeout(async () => {
+        const response = await askGPT(message.word);
+        sendResponse({ ...response });
+      });
+
+      return true;
     }
   });
 });
