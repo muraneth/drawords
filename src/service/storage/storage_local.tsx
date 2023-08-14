@@ -1,19 +1,5 @@
 import PouchDB from "pouchdb";
-
-export interface WordRecord {
-  _id: string;
-  _rev: string;
-  word: string;
-  saveCount: number;
-}
-
-export interface WordHistory {
-  _id: string;
-  _rev: string;
-  sentene: string;
-  source: string;
-  timestamp: number;
-}
+import { WordRecord } from "./storage_interface";
 
 const wordListDB = new PouchDB("wordslist");
 const historyDB = new PouchDB("wordshistory");
@@ -42,44 +28,69 @@ const useLocalStorage = () => {
     return;
   };
 
-  const queryWord = async (word: string) => {
-    return await wordListDB.get(word);
+  const queryWord = async (word: string): Promise<WordRecord | undefined> => {
+    try {
+      const result = await wordListDB.get(word);
+      if (result) {
+        return { ...result } as WordRecord;
+      }
+    } catch (e) {
+      console.log("local not found", e);
+      return;
+    }
   };
 
-  const addWord = async (word: string) => {
-    try {
-      const doc = await wordListDB.get(word);
-      console.log("add word", doc);
+  const addWord = async (
+    wordRecord: WordRecord
+  ): Promise<{ _id: string; _rev: string; saveCount: number }> => {
+    if (!wordRecord._id) wordRecord._id = wordRecord.word;
 
-      await wordListDB.put({
-        _id: word,
+    try {
+      const doc = await wordListDB.get(wordRecord._id);
+      console.log("add word", doc);
+      const d = {
+        _id: wordRecord._id,
         _rev: doc._rev,
         saveCount: doc["saveCount"] ? doc["saveCount"] + 1 : 1,
-      });
+      };
+
+      const re = await wordListDB.put(d);
+      return { _id: re.id, _rev: re.rev, saveCount: d.saveCount };
     } catch (error) {
       if (error.name === "not_found") {
-        await wordListDB.put({
-          _id: word,
+        const re = await wordListDB.put({
+          _id: wordRecord._id,
           saveCount: 1,
         });
+        return { _id: re.id, _rev: re.rev, saveCount: 1 };
       } else {
         console.error("Error adding word:", error);
+        return;
       }
     }
   };
 
-  const updateWord = async (word: WordRecord) => {
+  const updateWord = async (word: WordRecord): Promise<boolean> => {
+    console.log("updateWord local", word);
+
     try {
+      if (!word._id) word._id = word.word;
       await wordListDB.put(word);
+      return true;
     } catch (error) {
-      console.error("Error updating todo:", error);
+      console.error("Error updating :", error);
+      return false;
     }
   };
-  const deleteWord = async (word: WordRecord) => {
+  const deleteWord = async (word: WordRecord): Promise<boolean> => {
+    if (!word._id) word._id = word.word;
+
     try {
-      await wordListDB.put({ ...word, _deleted: true });
+      await wordListDB.put(word);
+      return true;
     } catch (error) {
       console.error("Error updating todo:", error);
+      return false;
     }
   };
 

@@ -45,7 +45,7 @@ async function showPopupThumb(
   x: number,
   y: number
 ) {
-  if (!wordSelected || !wordSelected.word) {
+  if (!wordSelected || !wordSelected.word || wordSelected.word.length < 2) {
     return;
   }
 
@@ -128,8 +128,6 @@ async function showPopupCard(wordSelected: WordSelected, x: number, y: number) {
   if ($popupThumb) {
     $popupThumb.style.visibility = "hidden";
   }
-  console.log("showPopupCard", wordSelected);
-
   const $popupCard =
     (await queryInjectCardElement()) ?? (await createPopupCard());
   $popupCard.style.position = "absolute";

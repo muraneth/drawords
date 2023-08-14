@@ -44,35 +44,45 @@ async function save(props: SaveWord) {
   const responce = await fetch("http://localhost:8080/save", requestOptions);
 }
 
+import { WordMessage } from "./assets/component/base_card";
 import { askGPT } from "./service/ai/chat_gpt_client";
-// import { LocalStorage, WordRecord } from "./storage/local_storage";
-import useLocalStorage from "./service/storage/storage_local";
 
-chrome.runtime.onInstalled.addListener(function () {
-  const { addWord } = useLocalStorage();
+import {
+  storeData,
+  retrieveAllData,
+} from "./service/storage/storage_interface";
 
-  chrome.runtime.onMessage.addListener(function (
-    message,
-    sender,
-    sendResponse
-  ) {
-    console.log("message =>", message, sender);
+chrome.runtime.onInstalled.addListener(function () {});
 
-    if (message.msgType == "save-word") {
-      setTimeout(() => {
-        addWord(message.word);
-        sendResponse({ farewell: "saved" });
-      }, 100);
+chrome.runtime.onMessage.addListener(function (
+  message: WordMessage,
+  sender,
+  sendResponse
+) {
+  console.log("message =>", message, sender);
 
-      return true;
-    }
-    if (message.msgType == "ai-analyze") {
-      setTimeout(async () => {
-        const response = await askGPT(message.word);
-        sendResponse({ ...response });
+  if (message.msgType == "save-word") {
+    setTimeout(() => {
+      storeData({
+        word: message.word,
+        translation: message.translation,
+        histories: [
+          {
+            sentence: message.contextSentence,
+            source: sender.url,
+            timestamp: new Date().getTime(),
+          },
+        ],
       });
-
-      return true;
-    }
-  });
+      sendResponse({ farewell: "saved" });
+    }, 10);
+    return true;
+  }
+  if (message.msgType == "ai-analyze") {
+    setTimeout(async () => {
+      const response = await askGPT(message.word);
+      sendResponse({ ...response });
+    });
+    return true;
+  }
 });

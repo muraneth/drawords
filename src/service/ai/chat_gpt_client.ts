@@ -62,7 +62,7 @@ You are English teacher, please pick up 6 very important or high level  phrases 
 
 async function getOpenAiKey(): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
-        resolve("sk-");
+        resolve("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");
     })
 }
 

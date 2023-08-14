@@ -51,8 +51,6 @@ export function Translator(props: WordSelected) {
 }
 
 function InnerTranslator(props: WordSelected) {
-  console.log("InnerTranslator", props);
-
   const [tran, setTran] = useState<GoogleResponse | undefined>();
 
   useEffect(() => translateWord(props.word, setTran), []);

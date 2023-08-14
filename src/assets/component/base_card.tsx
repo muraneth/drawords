@@ -18,7 +18,7 @@ const TranslatorCard = styled.div`
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-size: 13px,
-    color: #333,
+    color: black,
 `;
 const WordSection = styled.div`
   margin-bottom: 10px;
@@ -32,12 +32,20 @@ const SaveBotton = styled.button`
     backgrount: #666;
   }
 `;
+export type MsgType = "save-word" | "ai-analyze";
+export interface WordMessage {
+  msgType: MsgType;
+  word: string;
+  contextSentence: string;
+  translation?: string;
+}
 
 function TranslatorCardBasic({ word, google_trans, context }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
   const [aiResponse, setAiResponse] = useState<GPTResponse>();
-  const [saved, setSaved] = useState(false);
+
+  const [savedFields, setSavedFields] = useState([]);
 
   const topSpeakRef = useRef<() => void>(() => null);
 
@@ -63,12 +71,18 @@ function TranslatorCardBasic({ word, google_trans, context }) {
     }
   };
 
-  function handleSave(): void {
+  function handleSave(item: string): void {
+    setSavedFields((prevFields) => [...prevFields, item]);
+
     chrome.runtime.sendMessage(
-      { word: word, contextSentence: context, msgType: "save-word" },
+      {
+        word: item,
+        contextSentence: context,
+        msgType: "save-word",
+        translation: google_trans,
+      } as WordMessage,
       (r) => {
         console.log("message response", r);
-        setSaved(true);
       }
     );
   }
@@ -81,7 +95,11 @@ function TranslatorCardBasic({ word, google_trans, context }) {
 
     setAnalyzed(true);
     chrome.runtime.sendMessage(
-      { word: word, contextSentence: context, msgType: "ai-analyze" },
+      {
+        word: word,
+        contextSentence: context,
+        msgType: "ai-analyze",
+      } as WordMessage,
       (r: GPTResponse) => {
         console.log("message response", r);
         setAiResponse(r);
@@ -96,19 +114,27 @@ function TranslatorCardBasic({ word, google_trans, context }) {
         <div onClick={handleSpeakAction}>
           <RxSpeakerLoud size={20} />
         </div>
-        {saved ? <RxHeartFilled /> : <RxHeart onClick={handleSave} />}
-        <RxActivityLog onClick={aiAnalyze} />
-        {aiResponse &&
-          Object.keys(aiResponse).map((field, index) => (
-            <li key={index}>
-              <strong>{field}:</strong> {aiResponse[field]}
-            </li>
-          ))}
+        {savedFields.includes(word) ? (
+          <RxHeartFilled />
+        ) : (
+          <RxHeart onClick={() => handleSave(word)} />
+        )}
       </WordSection>
-
       <WordSection>
         <strong>Translation:</strong> {google_trans}
       </WordSection>
+      <RxActivityLog onClick={aiAnalyze} />
+      {aiResponse &&
+        Object.keys(aiResponse).map((field, index) => (
+          <li key={index}>
+            <strong>{field}:</strong> {aiResponse[field]}
+            {savedFields.includes(field) ? (
+              <RxHeartFilled />
+            ) : (
+              <RxHeart onClick={() => handleSave(field)} />
+            )}
+          </li>
+        ))}
     </TranslatorCard>
   );
 }

@@ -7,9 +7,13 @@ import {
 } from "react";
 import ReactDOM from "react-dom/client";
 
-import useLocalStorage, { WordRecord } from "../service/storage/storage_local";
 import styled from "styled-components";
 import { TiDeleteOutline } from "react-icons/ti";
+import {
+  WordRecord,
+  deleteData,
+  retrieveAllData,
+} from "../service/storage/storage_interface";
 
 const Body = styled.div`
   display: flex;
@@ -56,20 +60,27 @@ export const Space = styled.div<SpaceProps>`
 `;
 
 const Newtab = () => {
-  const { getAllWords, deleteWord } = useLocalStorage();
   const [records, setRecords] = useState<WordRecord[]>();
 
   useEffect(() => {
-    getAllWords().then((result) => {
-      setRecords(result);
-    });
+    retrieveAllData()
+      .then((result) => {
+        setRecords(result);
+      })
+      .catch((e) => console.log(e));
   }, []);
 
   const handleDelete = async (item: WordRecord) => {
-    await deleteWord(item);
-    getAllWords().then((result) => {
-      setRecords(result);
-    });
+    console.log("new tab delete data", item);
+
+    deleteData(item);
+    // setTimeout(() => {
+    //   retrieveAllData()
+    //     .then((result) => {
+    //       setRecords(result);
+    //     })
+    //     .catch((e) => console.log(e));
+    // }, 300);
   };
 
   return (
@@ -90,6 +101,7 @@ const Newtab = () => {
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+console.log(root);
 
 root.render(
   <StrictMode>
