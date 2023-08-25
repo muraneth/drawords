@@ -11,18 +11,23 @@ import { GoogleResponse } from "./google_trans";
 import { GPTResponse } from "../../service/ai/chat_gpt_client";
 
 const TranslatorCard = styled.div`
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding-right: 10px;
-    width: 100%;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    font-size: 13px,
-    color: black,
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px;
+  background-color: rgb(255, 255, 255);
+  position: absolute;
+  z-index: 1201 !important;
+  border-width: 1px;
+  border-style: solid;
+  border-image: initial;
+  border-color: rgb(187, 187, 187) rgb(187, 187, 187) rgb(168, 168, 168);
+  padding: 16px;
 `;
-const WordSection = styled.div`
-  margin-bottom: 10px;
-  flex: auto;
+const BubbleContent = styled.div`
+  color: #252525;
+  font-family: "Roboto", arial, sans-serif;
+  display: inline;
+  font-size: 18px;
+  margin: 5px auto;
+  padding: 5px 0;
 `;
 
 const SaveBotton = styled.button`
@@ -109,7 +114,7 @@ function TranslatorCardBasic({ word, google_trans, context }) {
 
   return (
     <TranslatorCard>
-      <WordSection>
+      <BubbleContent>
         <strong>Original:</strong> {word}
         <div onClick={handleSpeakAction}>
           <RxSpeakerLoud size={20} />
@@ -119,10 +124,8 @@ function TranslatorCardBasic({ word, google_trans, context }) {
         ) : (
           <RxHeart onClick={() => handleSave(word)} />
         )}
-      </WordSection>
-      <WordSection>
         <strong>Translation:</strong> {google_trans}
-      </WordSection>
+      </BubbleContent>
       <RxActivityLog onClick={aiAnalyze} />
       {aiResponse &&
         Object.keys(aiResponse).map((field, index) => (
